@@ -1,10 +1,37 @@
-import { R2Explorer } from "r2-explorer";
+import { Env } from './types/index.js';
+import { handleHomePage } from './handlers/home.js';
+import { handleSitePage } from './handlers/site.js';
+import { handleImageRequest, handleImageUpload } from './handlers/api.js';
 
-export default R2Explorer({
-  // Set to false to allow users to upload files
-  readonly: true,
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    try {
+      const url = new URL(request.url);
+      const path = url.pathname;
 
-  // Learn more how to secure your R2 Explorer instance:
-  // https://r2explorer.com/getting-started/security/
-  // cfAccessTeamName: "my-team-name",
-});
+      // Root path - home page with create form
+      if (path === '/') {
+        return await handleHomePage(request, env);
+      }
+
+      // API routes
+      if (path.startsWith('/api/image/')) {
+        return await handleImageRequest(request, env);
+      }
+
+      if (path.startsWith('/api/upload/')) {
+        return await handleImageUpload(request, env);
+      }
+
+      // Dynamic site pages
+      if (path.length > 1) {
+        return await handleSitePage(request, env);
+      }
+
+      return new Response('Not Found', { status: 404 });
+    } catch (error) {
+      console.error('Request error:', error);
+      return new Response('Internal Server Error', { status: 500 });
+    }
+  }
+};

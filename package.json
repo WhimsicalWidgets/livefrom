@@ -16,12 +16,9 @@
     "preview_image_url": "https://imagedelivery.net/wSMYJvS3Xw-n339CbDyDIA/e3c4ab7e-43f2-49df-6317-437f4ae8ce00/public",
     "publish": true
   },
-  "dependencies": {
-    "r2-explorer": "1.1.9"
-  },
   "devDependencies": {
     "typescript": "5.8.3",
-    "wrangler": "4.21.x"
+    "wrangler": "4.34.0"
   },
   "scripts": {
     "cf-typegen": "wrangler types",
