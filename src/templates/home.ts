@@ -128,6 +128,23 @@ textarea {
     line-height: 1.5;
 }
 
+.footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.footer a {
+    color: #667eea;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 2rem;
@@ -148,7 +165,7 @@ textarea {
 <body>
     <div class="container">
         <div class="header">
-            <h1 class="title">Live From</h1>
+            <h1 class="title">LiveFrom.me</h1>
             <p class="subtitle">Create your own updateable live view</p>
         </div>
         
@@ -181,6 +198,10 @@ textarea {
                 Create LiveFrom.me
             </button>
         </form>
+        
+        <div class="footer">
+            A <a href="https://github.com/orgs/WhimsicalWidgets/repositories" target="_blank">Whimsical Widget</a> made by <a href="https://www.linkedin.com/in/kellj/" target="_blank">Kelly</a>
+        </div>
     </div>
 </body>
 </html>`;

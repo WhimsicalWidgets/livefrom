@@ -344,6 +344,23 @@ body {
         font-size: 1.8rem;
     }
 }
+
+.footer {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.footer a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}
     </style>
     <link id="dynamicFavicon" rel="icon" href="${hasImage ? `https://r2.livefrom.me/${siteName}.png` : '/favicon.ico'}" type="image/png">
 </head>
@@ -352,7 +369,8 @@ body {
         <header class="header">
             <h1 class="title">Live From ${metadata.title}</h1>
             <p class="subtitle">${metadata.description}</p>
-            <p class="instruction-text">See the latest photo or update it!</p>
+            <p class="instruction-text">See the latest photo or update the photo!<br/>
+¡Ve la última foto o actualiza la foto!</p>
         </header>
         
         <div class="upload-section">
@@ -388,6 +406,10 @@ body {
                 </svg>
                 <div class="share-text">Share / Compartir</div>
             </button>
+        </div>
+        
+        <div class="footer">
+            A <a href="https://github.com/orgs/WhimsicalWidgets/repositories" target="_blank">Whimsical Widget</a> made by <a href="https://www.linkedin.com/in/kellj/" target="_blank">Kelly</a>
         </div>
     </div>
 
