@@ -1,28 +1,6 @@
 import { RouteHandler } from '../types/index.js';
 import { R2Service } from '../services/r2.js';
 
-export const handleImageRequest: RouteHandler = async (request, env) => {
-  const url = new URL(request.url);
-  const siteName = url.pathname.replace('/api/image/', '');
-
-  if (!siteName) {
-    return new Response('Site name required', { status: 400 });
-  }
-
-  const r2Service = new R2Service(env.bucket);
-  const imageObject = await r2Service.getSiteImage(siteName);
-
-  if (!imageObject) {
-    return new Response('Image not found', { status: 404 });
-  }
-
-  return new Response((imageObject as R2ObjectBody).body, {
-    headers: {
-      'Content-Type': 'image/png',
-      'Cache-Control': 'public, max-age=3600'
-    }
-  });
-};
 
 export const handleImageUpload: RouteHandler = async (request, env) => {
   if (request.method !== 'POST') {

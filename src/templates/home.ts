@@ -4,7 +4,7 @@ export function renderHomePage(): string {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live From - Create Your Live Stream</title>
+    <title>Live From - Create Your Live View</title>
     <link rel="icon" type="image/png" href="https://r2.livefrom.me/favicon.png">
     <style>
 * {
@@ -149,17 +149,17 @@ textarea {
     <div class="container">
         <div class="header">
             <h1 class="title">Live From</h1>
-            <p class="subtitle">Create your own live photo stream</p>
+            <p class="subtitle">Create your own updateable live view</p>
         </div>
         
         <form method="POST">
             <div class="form-group">
-                <label for="title">Site Name <span class="required">*</span></label>
+                <label for="title">View Name <span class="required">*</span></label>
                 <input 
                     type="text" 
                     id="title" 
                     name="title" 
-                    placeholder="e.g., 300023rd-free, my-coffee-shop" 
+                    placeholder="e.g., phils-24th-line, my-community-free-bin" 
                     required
                     pattern="[a-zA-Z0-9-_]+"
                     title="Only letters, numbers, hyphens, and underscores allowed"
@@ -175,47 +175,11 @@ textarea {
                     required
                 ></textarea>
             </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="author">Your Name</label>
-                    <input 
-                        type="text" 
-                        id="author" 
-                        name="author" 
-                        placeholder="Optional"
-                    >
-                </div>
-                
-                <div class="form-group">
-                    <label for="location">Location</label>
-                    <input 
-                        type="text" 
-                        id="location" 
-                        name="location" 
-                        placeholder="City, Country"
-                    >
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="tags">Tags (comma-separated)</label>
-                <input 
-                    type="text" 
-                    id="tags" 
-                    name="tags" 
-                    placeholder="coffee, art, nature, etc."
-                >
-            </div>
+
             
             <button type="submit" class="submit-btn">
-                Create Live From Site
+                Create LiveFrom.me
             </button>
-            
-            <p class="info-text">
-                After creating your site, you'll get a shareable URL where people can see live updates. 
-                You can upload photos directly from your camera or device.
-            </p>
         </form>
     </div>
 </body>

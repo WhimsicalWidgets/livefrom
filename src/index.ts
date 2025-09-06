@@ -1,7 +1,7 @@
 import { Env } from './types/index.js';
 import { handleHomePage } from './handlers/home.js';
 import { handleSitePage } from './handlers/site.js';
-import { handleImageRequest, handleImageUpload } from './handlers/api.js';
+import { handleImageUpload } from './handlers/api.js';
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -15,10 +15,6 @@ export default {
       }
 
       // API routes
-      if (path.startsWith('/api/image/')) {
-        return await handleImageRequest(request, env);
-      }
-
       if (path.startsWith('/api/upload/')) {
         return await handleImageUpload(request, env);
       }

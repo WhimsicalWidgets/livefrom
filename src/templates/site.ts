@@ -11,7 +11,7 @@ export function renderSitePage(siteName: string, metadata: SiteMetadata, hasImag
     <meta name="description" content="${metadata.description}">
     <meta property="og:title" content="Live From ${metadata.title}">
     <meta property="og:description" content="${metadata.description}">
-    ${hasImage ? `<meta property="og:image" content="/api/image/${siteName}">` : ''}
+    ${hasImage ? `<meta property="og:image" content="https://r2.livefrom.me/${siteName}.png">` : ''}
     <style>
 * {
     margin: 0;
@@ -157,33 +157,72 @@ body {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     padding: 1rem;
-    margin-bottom: 2rem;
+    margin: 1rem;
     backdrop-filter: blur(10px);
     position: relative;
+    transition: opacity 0.3s ease;
+    min-height: 70vh;
+    display: flex;
+    flex-direction: column;
 }
 
 .camera-container video {
     width: 100%;
-    max-height: 600px;
+    flex: 1;
     object-fit: cover;
     border-radius: 10px;
+    transform: scaleX(-1);
+    min-height: 300px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .camera-controls {
     display: flex;
     justify-content: center;
-    gap: 2rem;
-    margin-top: 1rem;
+    gap: 3rem;
+    margin-top: 1.5rem;
+    padding: 1rem 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .capture-btn, .cancel-btn {
-    width: 60px;
-    height: 60px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     border: none;
-    font-size: 1.5rem;
+    font-size: 2rem;
     cursor: pointer;
     transition: all 0.3s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.camera-loading {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    color: #666;
+    font-size: 1.1rem;
+    transition: opacity 0.3s ease;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(102, 126, 234, 0.1);
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .capture-btn {
@@ -269,12 +308,14 @@ body {
 
 @media (max-width: 768px) {
     .container {
-        padding: 1rem;
+        padding: 0.5rem;
+        margin: 0;
     }
     
     .current-photo {
         min-height: 300px;
         padding: 1rem;
+        margin: 0.5rem;
     }
     
     .upload-area, .share-btn {
@@ -282,18 +323,29 @@ body {
         padding: 1rem;
     }
     
+    .camera-container {
+        margin: 0.5rem;
+        min-height: 80vh;
+        border-radius: 15px;
+    }
+    
+    .camera-container video {
+        min-height: 60vh;
+    }
+    
     .camera-controls {
-        gap: 1rem;
+        gap: 4rem;
+        padding: 1.5rem 0;
     }
     
     .capture-btn, .cancel-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 1.2rem;
+        width: 70px;
+        height: 70px;
+        font-size: 1.8rem;
     }
 }
     </style>
-    <link id="dynamicFavicon" rel="icon" href="${hasImage ? `/api/image/${siteName}` : '/favicon.ico'}" type="image/png">
+    <link id="dynamicFavicon" rel="icon" href="${hasImage ? `https://r2.livefrom.me/${siteName}.png` : '/favicon.ico'}" type="image/png">
 </head>
 <body>
     <div class="container">
@@ -306,14 +358,18 @@ body {
         <div class="upload-section">
             <div class="current-photo" id="currentPhoto">
                 ${hasImage ? 
-                    `<img src="/api/image/${siteName}" alt="Latest from ${metadata.title}">
+                    `<img src="https://r2.livefrom.me/${siteName}.png?t=${Date.now()}" alt="Latest from ${metadata.title}">
                      <div class="photo-date">Last updated recently</div>` : 
                     `<p class="no-photo">No photo uploaded yet</p>`
                 }
             </div>
-            <div class="camera-container" id="cameraContainer" style="display: none;">
-                <video id="video" autoplay playsinline></video>
-                <div class="camera-controls">
+            <div class="camera-container" id="cameraContainer" style="display: none; opacity: 0;">
+                <div class="camera-loading" id="cameraLoading">
+                    <div class="loading-spinner"></div>
+                    <p>Starting camera...</p>
+                </div>
+                <video id="video" autoplay playsinline style="display: none;"></video>
+                <div class="camera-controls" style="display: none;">
                     <button id="captureBtn" class="capture-btn">📸</button>
                     <button id="cancelBtn" class="cancel-btn">✕</button>
                 </div>
@@ -339,6 +395,7 @@ body {
 const uploadArea = document.getElementById('uploadArea');
 const currentPhoto = document.getElementById('currentPhoto');
 const cameraContainer = document.getElementById('cameraContainer');
+const cameraLoading = document.getElementById('cameraLoading');
 const video = document.getElementById('video');
 const captureBtn = document.getElementById('captureBtn');
 const cancelBtn = document.getElementById('cancelBtn');
@@ -347,16 +404,50 @@ const shareBtn = document.getElementById('shareBtn');
 let stream = null;
 
 uploadArea.addEventListener('click', async () => {
+    // Show loading immediately
+    uploadArea.style.display = 'none';
+    currentPhoto.style.display = 'none';
+    document.querySelector('.action-buttons').style.display = 'none';
+    document.querySelector('.header').style.display = 'none';
+    
+    cameraContainer.style.display = 'block';
+    setTimeout(() => {
+        cameraContainer.style.opacity = '1';
+    }, 10);
+
     try {
+        // Optimized camera settings for faster initialization
         stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'environment' } 
+            video: { 
+                facingMode: 'environment',
+                width: { ideal: 1280, max: 1920 },
+                height: { ideal: 720, max: 1080 },
+                frameRate: { ideal: 30, max: 60 }
+            } 
         });
+        
         video.srcObject = stream;
-        uploadArea.style.display = 'none';
-        currentPhoto.style.display = 'none';
-        cameraContainer.style.display = 'block';
+        
+        // Wait for video to be ready
+        video.onloadedmetadata = () => {
+            // Hide loading, show video and controls with smooth transition
+            cameraLoading.style.opacity = '0';
+            setTimeout(() => {
+                cameraLoading.style.display = 'none';
+                video.style.display = 'block';
+                document.querySelector('.camera-controls').style.display = 'flex';
+                
+                // Fade in video and controls
+                setTimeout(() => {
+                    video.style.opacity = '1';
+                    document.querySelector('.camera-controls').style.opacity = '1';
+                }, 10);
+            }, 300);
+        };
+        
     } catch (err) {
         alert('Camera access denied or not available');
+        closeCamera();
     }
 });
 
@@ -381,7 +472,7 @@ captureBtn.addEventListener('click', () => {
                 // Force reload image by adding timestamp to bust cache
                 const img = currentPhoto.querySelector('img');
                 if (img) {
-                    img.src = '/api/image/${siteName}?t=' + Date.now();
+                    img.src = 'https://r2.livefrom.me/${siteName}.png?t=' + Date.now();
                 } else {
                     // No existing image, reload page to show new one
                     location.reload();
@@ -401,12 +492,27 @@ captureBtn.addEventListener('click', () => {
 cancelBtn.addEventListener('click', closeCamera);
 
 function closeCamera() {
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-    }
-    cameraContainer.style.display = 'none';
-    currentPhoto.style.display = 'flex';
-    uploadArea.style.display = 'block';
+    // Smooth fade out
+    cameraContainer.style.opacity = '0';
+    
+    setTimeout(() => {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+        // Reset all elements to initial state
+        cameraContainer.style.display = 'none';
+        cameraLoading.style.display = 'flex';
+        cameraLoading.style.opacity = '1';
+        video.style.display = 'none';
+        video.style.opacity = '0';
+        document.querySelector('.camera-controls').style.display = 'none';
+        document.querySelector('.camera-controls').style.opacity = '0';
+        
+        currentPhoto.style.display = 'flex';
+        uploadArea.style.display = 'block';
+        document.querySelector('.action-buttons').style.display = 'flex';
+        document.querySelector('.header').style.display = 'block';
+    }, 300);
 }
 
 shareBtn.addEventListener('click', async () => {
