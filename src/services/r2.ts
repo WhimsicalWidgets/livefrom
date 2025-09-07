@@ -1,4 +1,5 @@
 import { SiteMetadata } from '../types/index.js';
+import { escapeHtml } from '../utils/escape.js';
 
 export class R2Service {
   constructor(private bucket: R2Bucket) {}
@@ -9,7 +10,17 @@ export class R2Service {
       if (!object) return null;
       
       const data = await object.text();
-      return JSON.parse(data) as SiteMetadata;
+      const metadata = JSON.parse(data) as SiteMetadata;
+      
+      // Sanitize all string values
+      return {
+        ...metadata,
+        title: escapeHtml(metadata.title),
+        description: escapeHtml(metadata.description),
+        author: metadata.author ? escapeHtml(metadata.author) : metadata.author,
+        location: metadata.location ? escapeHtml(metadata.location) : metadata.location,
+        tags: metadata.tags?.map(tag => escapeHtml(tag))
+      };
     } catch (error) {
       console.error('Error getting site metadata:', error);
       return null;
