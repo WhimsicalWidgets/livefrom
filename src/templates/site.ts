@@ -1,6 +1,7 @@
 import { SiteMetadata } from '../types/index.js';
 
 export function renderSitePage(slug: string, metadata: SiteMetadata, hasImage: boolean): string {
+  metadata.title = metadata.title.replace(/'/g, "\\'")
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
