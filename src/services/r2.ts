@@ -3,9 +3,9 @@ import { SiteMetadata } from '../types/index.js';
 export class R2Service {
   constructor(private bucket: R2Bucket) {}
 
-  async getSiteMetadata(siteName: string): Promise<SiteMetadata | null> {
+  async getSiteMetadata(slug: string): Promise<SiteMetadata | null> {
     try {
-      const object = await this.bucket.get(`${siteName}.json`);
+      const object = await this.bucket.get(`${slug}.json`);
       if (!object) return null;
       
       const data = await object.text();
@@ -16,9 +16,9 @@ export class R2Service {
     }
   }
 
-  async setSiteMetadata(siteName: string, metadata: SiteMetadata): Promise<boolean> {
+  async setSiteMetadata(slug: string, metadata: SiteMetadata): Promise<boolean> {
     try {
-      await this.bucket.put(`${siteName}.json`, JSON.stringify(metadata, null, 2), {
+      await this.bucket.put(`${slug}.json`, JSON.stringify(metadata, null, 2), {
         httpMetadata: { contentType: 'application/json' }
       });
       return true;
@@ -28,18 +28,18 @@ export class R2Service {
     }
   }
 
-  async getSiteImage(siteName: string): Promise<R2Object | null> {
+  async getSiteImage(slug: string): Promise<R2Object | null> {
     try {
-      return await this.bucket.get(`${siteName}.png`);
+      return await this.bucket.get(`${slug}.png`);
     } catch (error) {
       console.error('Error getting site image:', error);
       return null;
     }
   }
 
-  async setSiteImage(siteName: string, imageData: ReadableStream | ArrayBuffer | string): Promise<boolean> {
+  async setSiteImage(slug: string, imageData: ReadableStream | ArrayBuffer | string): Promise<boolean> {
     try {
-      await this.bucket.put(`${siteName}.png`, imageData, {
+      await this.bucket.put(`${slug}.png`, imageData, {
         httpMetadata: { contentType: 'image/png' }
       });
       return true;
@@ -49,7 +49,7 @@ export class R2Service {
     }
   }
 
-  async siteExists(siteName: string): Promise<boolean> {
-    return (await this.getSiteMetadata(siteName)) !== null;
+  async siteExists(slug: string): Promise<boolean> {
+    return (await this.getSiteMetadata(slug)) !== null;
   }
 }

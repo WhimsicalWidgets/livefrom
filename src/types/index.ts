@@ -4,6 +4,7 @@ export interface Env {
 
 export interface SiteMetadata {
   title: string;
+  slug: string;
   description: string;
   created: string;
   author?: string;

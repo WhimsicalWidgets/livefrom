@@ -8,17 +8,17 @@ export const handleImageUpload: RouteHandler = async (request, env) => {
   }
 
   const url = new URL(request.url);
-  const siteName = url.pathname.replace('/api/upload/', '');
+  const slug = url.pathname.replace('/api/upload/', '');
 
-  if (!siteName) {
-    return new Response('Site name required', { status: 400 });
+  if (!slug) {
+    return new Response('Site slug required', { status: 400 });
   }
 
   try {
     const r2Service = new R2Service(env.bucket);
 
     // Verify site exists
-    if (!(await r2Service.siteExists(siteName))) {
+    if (!(await r2Service.siteExists(slug))) {
       return new Response('Site not found', { status: 404 });
     }
 
@@ -39,7 +39,7 @@ export const handleImageUpload: RouteHandler = async (request, env) => {
       return new Response('File too large. Maximum size is 10MB.', { status: 400 });
     }
 
-    const success = await r2Service.setSiteImage(siteName, imageFile.stream());
+    const success = await r2Service.setSiteImage(slug, imageFile.stream());
 
     if (!success) {
       return new Response('Upload failed', { status: 500 });

@@ -1,6 +1,7 @@
 import { RouteHandler, SiteMetadata } from '../types/index.js';
 import { R2Service } from '../services/r2.js';
 import { renderHomePage } from '../templates/home.js';
+import { createSlug } from '../utils/slug.js';
 
 export const handleHomePage: RouteHandler = async (request, env) => {
   if (request.method === 'GET') {
@@ -29,15 +30,17 @@ async function handleCreateSite(request: Request, env: any): Promise<Response> {
       return new Response('Title and description are required', { status: 400 });
     }
 
-    // Validate site name
-    if (!/^[a-zA-Z0-9-_]+$/.test(title)) {
-      return new Response('Site name can only contain letters, numbers, hyphens, and underscores', { status: 400 });
+    // Generate URL-safe slug from title
+    const slug = createSlug(title);
+    
+    if (!slug) {
+      return new Response('Title must contain at least some alphanumeric characters', { status: 400 });
     }
 
     const r2Service = new R2Service(env.bucket);
 
     // Check if site already exists
-    if (await r2Service.siteExists(title)) {
+    if (await r2Service.siteExists(slug)) {
       return new Response('A site with this name already exists', { status: 409 });
     }
 
@@ -45,6 +48,7 @@ async function handleCreateSite(request: Request, env: any): Promise<Response> {
 
     const metadata: SiteMetadata = {
       title,
+      slug,
       description,
       created: new Date().toISOString(),
       ...(author && { author }),
@@ -52,7 +56,7 @@ async function handleCreateSite(request: Request, env: any): Promise<Response> {
       ...(tags.length > 0 && { tags })
     };
 
-    const success = await r2Service.setSiteMetadata(title, metadata);
+    const success = await r2Service.setSiteMetadata(slug, metadata);
 
     if (!success) {
       return new Response('Failed to create site', { status: 500 });
@@ -60,7 +64,7 @@ async function handleCreateSite(request: Request, env: any): Promise<Response> {
 
     return new Response('Site created successfully!', {
       status: 302,
-      headers: { 'Location': `/${title}` }
+      headers: { 'Location': `/${slug}` }
     });
   } catch (error) {
     console.error('Error creating site:', error);

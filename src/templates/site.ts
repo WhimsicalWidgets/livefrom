@@ -1,6 +1,6 @@
 import { SiteMetadata } from '../types/index.js';
 
-export function renderSitePage(siteName: string, metadata: SiteMetadata, hasImage: boolean): string {
+export function renderSitePage(slug: string, metadata: SiteMetadata, hasImage: boolean): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +11,7 @@ export function renderSitePage(siteName: string, metadata: SiteMetadata, hasImag
     <meta name="description" content="${metadata.description}">
     <meta property="og:title" content="Live From ${metadata.title}">
     <meta property="og:description" content="${metadata.description}">
-    ${hasImage ? `<meta property="og:image" content="https://r2.livefrom.me/${siteName}.png">` : ''}
+    ${hasImage ? `<meta property="og:image" content="https://r2.livefrom.me/${slug}.png">` : ''}
     <style>
 * {
     margin: 0;
@@ -472,7 +472,7 @@ body {
     text-decoration: underline;
 }
     </style>
-    <link id="dynamicFavicon" rel="icon" href="${hasImage ? `https://r2.livefrom.me/${siteName}.png` : '/favicon.ico'}" type="image/png">
+    <link id="dynamicFavicon" rel="icon" href="${hasImage ? `https://r2.livefrom.me/${slug}.png` : '/favicon.ico'}" type="image/png">
 </head>
 <body>
     <div class="container">
@@ -486,7 +486,7 @@ body {
         <div class="upload-section">
             <div class="current-photo" id="currentPhoto">
                 ${hasImage ? 
-                    `<img src="https://r2.livefrom.me/${siteName}.png?t=${Date.now()}" alt="Latest from ${metadata.title}">
+                    `<img src="https://r2.livefrom.me/${slug}.png?t=${Date.now()}" alt="Latest from ${metadata.title}">
                      <div class="photo-date">Last updated recently</div>` : 
                     `<p class="no-photo">No photo uploaded yet</p>`
                 }
@@ -684,10 +684,10 @@ async function uploadPhoto() {
     if (!capturedBlob) return;
     
     const formData = new FormData();
-    formData.append('image', capturedBlob, '${siteName}.png');
+    formData.append('image', capturedBlob, '${slug}.png');
     
     try {
-        const response = await fetch('/api/upload/${siteName}', {
+        const response = await fetch('/api/upload/${slug}', {
             method: 'POST',
             body: formData
         });
@@ -696,7 +696,7 @@ async function uploadPhoto() {
             // Force reload image by adding timestamp to bust cache
             const img = currentPhoto.querySelector('img');
             if (img) {
-                img.src = 'https://r2.livefrom.me/${siteName}.png?t=' + Date.now();
+                img.src = 'https://r2.livefrom.me/${slug}.png?t=' + Date.now();
             } else {
                 // No existing image, reload page to show new one
                 location.reload();

@@ -4,15 +4,15 @@ import { renderSitePage } from '../templates/site.js';
 
 export const handleSitePage: RouteHandler = async (request, env) => {
   const url = new URL(request.url);
-  const siteName = url.pathname.slice(1); // Remove leading slash
+  const slug = url.pathname.slice(1); // Remove leading slash
 
-  if (!siteName) {
-    return new Response('Site name required', { status: 400 });
+  if (!slug) {
+    return new Response('Site slug required', { status: 400 });
   }
 
   // Fetch metadata directly from R2 URL
   try {
-    const metadataResponse = await fetch(`https://r2.livefrom.me/${siteName}.json`);
+    const metadataResponse = await fetch(`https://r2.livefrom.me/${slug}.json`);
     if (!metadataResponse.ok) {
       return new Response('Site not found', { status: 404 });
     }
@@ -20,10 +20,10 @@ export const handleSitePage: RouteHandler = async (request, env) => {
     const metadata = await metadataResponse.json();
     
     // Check if image exists
-    const imageResponse = await fetch(`https://r2.livefrom.me/${siteName}.png`, { method: 'HEAD' });
+    const imageResponse = await fetch(`https://r2.livefrom.me/${slug}.png`, { method: 'HEAD' });
     const hasImage = imageResponse.ok;
 
-    const html = renderSitePage(siteName, metadata, hasImage);
+    const html = renderSitePage(slug, metadata, hasImage);
     return new Response(html, {
       headers: { 'Content-Type': 'text/html' }
     });
