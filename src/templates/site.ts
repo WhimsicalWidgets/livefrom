@@ -162,41 +162,53 @@ body {
     position: relative;
     transition: opacity 0.3s ease;
     min-height: 70vh;
-    display: flex;
-    flex-direction: column;
+    overflow: hidden;
 }
 
 .camera-container video {
     width: 100%;
-    flex: 1;
+    height: 100%;
     object-fit: cover;
-    border-radius: 10px;
-    transform: scaleX(-1);
-    min-height: 300px;
+    border-radius: 20px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     opacity: 0;
     transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
+.camera-container video.front-camera {
+    transform: scaleX(-1);
 }
 
 .camera-controls {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
     justify-content: center;
-    gap: 3rem;
-    margin-top: 1.5rem;
-    padding: 1rem 0;
+    gap: 2rem;
     opacity: 0;
     transition: opacity 0.3s ease;
+    z-index: 10;
 }
 
-.capture-btn, .cancel-btn {
-    width: 80px;
-    height: 80px;
+.capture-btn, .cancel-btn, .switch-camera-btn {
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     border: none;
-    font-size: 2rem;
+    font-size: 1.8rem;
     cursor: pointer;
     transition: all 0.3s ease;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .camera-loading {
@@ -226,23 +238,113 @@ body {
 }
 
 .capture-btn {
-    background: #4CAF50;
+    background: rgba(76, 175, 80, 0.9);
     color: white;
 }
 
 .capture-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+    background: rgba(76, 175, 80, 1);
 }
 
 .cancel-btn {
-    background: #f44336;
+    background: rgba(244, 67, 54, 0.9);
     color: white;
+}
+
+.switch-camera-btn {
+    background: rgba(103, 58, 183, 0.9);
+    color: white;
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    width: 50px;
+    height: 50px;
+    font-size: 1.4rem;
+    z-index: 11;
 }
 
 .cancel-btn:hover {
     transform: scale(1.1);
     box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+    background: rgba(244, 67, 54, 1);
+}
+
+.switch-camera-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 5px 15px rgba(103, 58, 183, 0.4);
+    background: rgba(103, 58, 183, 1);
+}
+
+.photo-confirm-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.photo-confirm-content {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 90vw;
+    max-height: 90vh;
+    backdrop-filter: blur(10px);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.photo-preview {
+    max-width: 100%;
+    max-height: 50vh;
+    border-radius: 10px;
+    object-fit: contain;
+}
+
+.confirm-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.confirm-btn, .retake-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.confirm-btn {
+    background: #4CAF50;
+    color: white;
+}
+
+.confirm-btn:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+}
+
+.retake-btn {
+    background: #f44336;
+    color: white;
+}
+
+.retake-btn:hover {
+    background: #da190b;
+    transform: translateY(-2px);
 }
 
 .upload-area:hover, .share-btn:hover {
@@ -330,18 +432,26 @@ body {
     }
     
     .camera-container video {
-        min-height: 60vh;
+        border-radius: 15px;
     }
     
     .camera-controls {
-        gap: 4rem;
-        padding: 1.5rem 0;
+        gap: 2rem;
+        bottom: 1.5rem;
+    }
+    
+    .switch-camera-btn {
+        top: 1rem;
+        right: 1rem;
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
     }
     
     .capture-btn, .cancel-btn {
-        width: 70px;
-        height: 70px;
-        font-size: 1.8rem;
+        width: 60px;
+        height: 60px;
+        font-size: 1.6rem;
     }
 }
 
@@ -387,6 +497,7 @@ body {
                     <p>Starting camera...</p>
                 </div>
                 <video id="video" autoplay playsinline style="display: none;"></video>
+                <button id="switchCameraBtn" class="switch-camera-btn" style="display: none;">🔄</button>
                 <div class="camera-controls" style="display: none;">
                     <button id="captureBtn" class="capture-btn">📸</button>
                     <button id="cancelBtn" class="cancel-btn">✕</button>
@@ -412,6 +523,17 @@ body {
             A <a href="https://github.com/orgs/WhimsicalWidgets/repositories" target="_blank">Whimsical Widget</a> made by <a href="https://www.linkedin.com/in/kellj/" target="_blank">Kelly</a>
         </div>
     </div>
+    
+    <div id="photoConfirmModal" class="photo-confirm-modal">
+        <div class="photo-confirm-content">
+            <h3>Upload this photo?</h3>
+            <img id="photoPreview" class="photo-preview" alt="Photo preview">
+            <div class="confirm-buttons">
+                <button id="confirmUploadBtn" class="confirm-btn">Upload / Subir</button>
+                <button id="retakeBtn" class="retake-btn">Retake / Repetir</button>
+            </div>
+        </div>
+    </div>
 
     <script>
 const uploadArea = document.getElementById('uploadArea');
@@ -421,9 +543,17 @@ const cameraLoading = document.getElementById('cameraLoading');
 const video = document.getElementById('video');
 const captureBtn = document.getElementById('captureBtn');
 const cancelBtn = document.getElementById('cancelBtn');
+const switchCameraBtn = document.getElementById('switchCameraBtn');
 const shareBtn = document.getElementById('shareBtn');
+const photoConfirmModal = document.getElementById('photoConfirmModal');
+const photoPreview = document.getElementById('photoPreview');
+const confirmUploadBtn = document.getElementById('confirmUploadBtn');
+const retakeBtn = document.getElementById('retakeBtn');
 
 let stream = null;
+let currentFacingMode = 'environment';
+let hasMultipleCameras = false;
+let capturedBlob = null;
 
 uploadArea.addEventListener('click', async () => {
     // Show loading immediately
@@ -438,10 +568,18 @@ uploadArea.addEventListener('click', async () => {
     }, 10);
 
     try {
+        // Check for multiple cameras AND if device is mobile
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                         ('ontouchstart' in window) || 
+                         (navigator.maxTouchPoints > 0);
+        hasMultipleCameras = videoDevices.length > 1 && isMobile;
+        
         // Optimized camera settings for faster initialization
         stream = await navigator.mediaDevices.getUserMedia({ 
             video: { 
-                facingMode: 'environment',
+                facingMode: currentFacingMode,
                 width: { ideal: 1280, max: 1920 },
                 height: { ideal: 720, max: 1080 },
                 frameRate: { ideal: 30, max: 60 }
@@ -452,17 +590,30 @@ uploadArea.addEventListener('click', async () => {
         
         // Wait for video to be ready
         video.onloadedmetadata = () => {
+            // Apply mirroring class for front camera
+            if (currentFacingMode === 'user') {
+                video.classList.add('front-camera');
+            } else {
+                video.classList.remove('front-camera');
+            }
+            
             // Hide loading, show video and controls with smooth transition
             cameraLoading.style.opacity = '0';
             setTimeout(() => {
                 cameraLoading.style.display = 'none';
                 video.style.display = 'block';
                 document.querySelector('.camera-controls').style.display = 'flex';
+                if (hasMultipleCameras) {
+                    switchCameraBtn.style.display = 'block';
+                }
                 
                 // Fade in video and controls
                 setTimeout(() => {
                     video.style.opacity = '1';
                     document.querySelector('.camera-controls').style.opacity = '1';
+                    if (hasMultipleCameras) {
+                        switchCameraBtn.style.opacity = '1';
+                    }
                 }, 10);
             }, 300);
         };
@@ -473,45 +624,152 @@ uploadArea.addEventListener('click', async () => {
     }
 });
 
-captureBtn.addEventListener('click', () => {
+function capturePhoto() {
     const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0);
     
-    canvas.toBlob(async (blob) => {
-        const formData = new FormData();
-        formData.append('image', blob, '${siteName}.png');
+    // Get the video element's display size
+    const videoDisplayWidth = video.clientWidth;
+    const videoDisplayHeight = video.clientHeight;
+    
+    // Set canvas to match the display size (what user sees)
+    canvas.width = videoDisplayWidth;
+    canvas.height = videoDisplayHeight;
+    
+    // Calculate the video's natural aspect ratio vs display aspect ratio
+    const videoAspectRatio = video.videoWidth / video.videoHeight;
+    const displayAspectRatio = videoDisplayWidth / videoDisplayHeight;
+    
+    let sourceX, sourceY, sourceWidth, sourceHeight;
+    
+    if (videoAspectRatio > displayAspectRatio) {
+        // Video is wider than display - crop sides
+        sourceHeight = video.videoHeight;
+        sourceWidth = video.videoHeight * displayAspectRatio;
+        sourceX = (video.videoWidth - sourceWidth) / 2;
+        sourceY = 0;
+    } else {
+        // Video is taller than display - crop top/bottom
+        sourceWidth = video.videoWidth;
+        sourceHeight = video.videoWidth / displayAspectRatio;
+        sourceX = 0;
+        sourceY = (video.videoHeight - sourceHeight) / 2;
+    }
+    
+    // Mirror canvas for front camera
+    if (currentFacingMode === 'user') {
+        ctx.translate(videoDisplayWidth, 0);
+        ctx.scale(-1, 1);
+    }
+    
+    // Draw only the visible portion
+    ctx.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, videoDisplayWidth, videoDisplayHeight);
+    
+    canvas.toBlob((blob) => {
+        capturedBlob = blob;
         
-        try {
-            const response = await fetch('/api/upload/${siteName}', {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (response.ok) {
-                // Force reload image by adding timestamp to bust cache
-                const img = currentPhoto.querySelector('img');
-                if (img) {
-                    img.src = 'https://r2.livefrom.me/${siteName}.png?t=' + Date.now();
-                } else {
-                    // No existing image, reload page to show new one
-                    location.reload();
-                }
-                currentPhoto.style.display = 'flex';
-            } else {
-                alert('Failed to upload photo');
-            }
-        } catch (err) {
-            alert('Upload failed: ' + err.message);
+        // Create preview URL and show modal
+        const previewUrl = URL.createObjectURL(blob);
+        photoPreview.src = previewUrl;
+        photoConfirmModal.style.display = 'flex';
+        
+        // Pause video stream while showing preview
+        if (stream) {
+            stream.getTracks().forEach(track => track.enabled = false);
         }
     }, 'image/png');
+}
+
+async function uploadPhoto() {
+    if (!capturedBlob) return;
     
-    closeCamera();
-});
+    const formData = new FormData();
+    formData.append('image', capturedBlob, '${siteName}.png');
+    
+    try {
+        const response = await fetch('/api/upload/${siteName}', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (response.ok) {
+            // Force reload image by adding timestamp to bust cache
+            const img = currentPhoto.querySelector('img');
+            if (img) {
+                img.src = 'https://r2.livefrom.me/${siteName}.png?t=' + Date.now();
+            } else {
+                // No existing image, reload page to show new one
+                location.reload();
+            }
+            currentPhoto.style.display = 'flex';
+            closeModal();
+            closeCamera();
+        } else {
+            alert('Failed to upload photo');
+        }
+    } catch (err) {
+        alert('Upload failed: ' + err.message);
+    }
+}
+
+function closeModal() {
+    photoConfirmModal.style.display = 'none';
+    URL.revokeObjectURL(photoPreview.src);
+    capturedBlob = null;
+    
+    // Resume video stream
+    if (stream) {
+        stream.getTracks().forEach(track => track.enabled = true);
+    }
+}
+
+captureBtn.addEventListener('click', capturePhoto);
+
+// Add tap-to-capture functionality
+video.addEventListener('click', capturePhoto);
+
+// Modal event listeners
+confirmUploadBtn.addEventListener('click', uploadPhoto);
+retakeBtn.addEventListener('click', closeModal);
 
 cancelBtn.addEventListener('click', closeCamera);
+
+switchCameraBtn.addEventListener('click', async () => {
+    if (!hasMultipleCameras) return;
+    
+    // Switch camera facing mode
+    currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+    
+    // Stop current stream
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+    
+    try {
+        // Get new stream with switched camera
+        stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: currentFacingMode,
+                width: { ideal: 1280, max: 1920 },
+                height: { ideal: 720, max: 1080 },
+                frameRate: { ideal: 30, max: 60 }
+            } 
+        });
+        
+        video.srcObject = stream;
+        
+        // Update mirroring class when switching cameras
+        if (currentFacingMode === 'user') {
+            video.classList.add('front-camera');
+        } else {
+            video.classList.remove('front-camera');
+        }
+    } catch (err) {
+        alert('Failed to switch camera');
+        // Try to restore previous camera
+        currentFacingMode = currentFacingMode === 'environment' ? 'user' : 'environment';
+    }
+});
 
 function closeCamera() {
     // Smooth fade out
@@ -527,6 +785,8 @@ function closeCamera() {
         cameraLoading.style.opacity = '1';
         video.style.display = 'none';
         video.style.opacity = '0';
+        switchCameraBtn.style.display = 'none';
+        switchCameraBtn.style.opacity = '0';
         document.querySelector('.camera-controls').style.display = 'none';
         document.querySelector('.camera-controls').style.opacity = '0';
         
